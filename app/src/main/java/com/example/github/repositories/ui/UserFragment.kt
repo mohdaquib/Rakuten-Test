@@ -2,6 +2,7 @@ package com.example.github.repositories.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,6 +46,7 @@ class UserFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.title.text = user?.login
         Picasso.get().load(user?.avatar_url?.toUri()).into(binding.image)
+        binding.list.adapter = repositoryAdapter
 
         user?.login?.let { viewModel.fetchUser(it) }
         viewModel.user.observe(viewLifecycleOwner) { state ->
@@ -63,11 +65,14 @@ class UserFragment : Fragment() {
                 }
             }
         }
+
         viewModel.repositories.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is UserViewModel.UserReposState.Success -> {
-                    repositoryAdapter.setList(state.result)
-                    binding.list.adapter = repositoryAdapter
+                    repositoryAdapter.submitList(state.result.toMutableList())
+                    repositoryAdapter.setOnClick {
+
+                    }
                 }
                 is UserViewModel.UserReposState.Error -> {
 

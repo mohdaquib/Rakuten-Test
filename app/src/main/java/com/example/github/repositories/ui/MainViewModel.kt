@@ -24,8 +24,12 @@ class MainViewModel @Inject constructor(
     private val repositoriesLiveData = MutableLiveData<SearchReposState>()
     val repositories: LiveData<SearchReposState> get() = repositoriesLiveData
 
+    private val refreshReposLiveData = MutableLiveData<RefreshRepoState>()
+    val refreshRepos: LiveData<RefreshRepoState> get() = refreshReposLiveData
+
     fun fetchItems() {
         viewModelScope.launch(coroutineDispatcher.main()) {
+            repositoriesLiveData.value = SearchReposState.Loading
             delay(1_000) // This is to simulate network latency, please don't remove!
             withContext(coroutineDispatcher.io()) {
                 try {
@@ -48,10 +52,10 @@ class MainViewModel @Inject constructor(
             withContext(coroutineDispatcher.io()) {
                 try {
                     val response = searchRepository.searchRepositories(QUERY, SORT, ORDER)
-                    repositoriesLiveData.postValue(SearchReposState.Success(response.items))
+                    refreshReposLiveData.postValue(RefreshRepoState.Success(response.items))
                 } catch (exception: Exception) {
-                    repositoriesLiveData.postValue(exception.message?.let {
-                        SearchReposState.Error(
+                    refreshReposLiveData.postValue(exception.message?.let {
+                        RefreshRepoState.Error(
                             it
                         )
                     })
@@ -61,7 +65,13 @@ class MainViewModel @Inject constructor(
     }
 
     sealed class SearchReposState {
+        object Loading : SearchReposState()
         data class Success(val list: List<RepositoryDTO>) : SearchReposState()
         data class Error(val error: String) : SearchReposState()
+    }
+
+    sealed class RefreshRepoState {
+        data class Success(val list: List<RepositoryDTO>) : RefreshRepoState()
+        data class Error(val error: String) : RefreshRepoState()
     }
 }
