@@ -14,6 +14,7 @@ import com.example.github.repositories.data.OwnerDTO
 import com.example.github.repositories.databinding.FragmentUserBinding
 import com.squareup.picasso.Picasso
 import dagger.hilt.android.AndroidEntryPoint
+import java.net.SocketTimeoutException
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -61,7 +62,7 @@ class UserFragment : Fragment() {
                     state.result.repos_url?.let { viewModel.fetchRepositories(it) }
                 }
                 is UserViewModel.UserState.Error -> {
-
+                    showErrorScreen(state.error)
                 }
             }
         }
@@ -75,9 +76,20 @@ class UserFragment : Fragment() {
                     }
                 }
                 is UserViewModel.UserReposState.Error -> {
-
+                    showErrorScreen(state.error)
                 }
             }
+        }
+    }
+
+    private fun showErrorScreen(exception: Exception) {
+        binding.contentLayout.visibility = View.GONE
+        binding.errorLayout.root.visibility = View.VISIBLE
+        binding.errorLayout.error.text =
+            if (exception is SocketTimeoutException) resources.getString(R.string.no_internet_connection_msg) else
+                resources.getString(R.string.something_went_wrong)
+        binding.errorLayout.retry.setOnClickListener {
+            user?.login?.let { viewModel.fetchUser(it) }
         }
     }
 
@@ -87,7 +99,7 @@ class UserFragment : Fragment() {
     }
 
     companion object {
-        val REPO_OWNER_KEY = "repo_owner_key"
+        const val REPO_OWNER_KEY = "repo_owner_key"
 
         fun newInstance(ownerDTO: OwnerDTO) = UserFragment().apply {
             arguments = Bundle().apply {

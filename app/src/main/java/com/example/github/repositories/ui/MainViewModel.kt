@@ -36,11 +36,7 @@ class MainViewModel @Inject constructor(
                     val response = searchRepository.searchRepositories(QUERY, SORT, ORDER)
                     repositoriesLiveData.postValue(SearchReposState.Success(response.items))
                 } catch (exception: Exception) {
-                    repositoriesLiveData.postValue(exception.message?.let {
-                        SearchReposState.Error(
-                            it
-                        )
-                    })
+                    repositoriesLiveData.postValue(SearchReposState.Error(exception))
                 }
             }
         }
@@ -54,11 +50,7 @@ class MainViewModel @Inject constructor(
                     val response = searchRepository.searchRepositories(QUERY, SORT, ORDER)
                     refreshReposLiveData.postValue(RefreshRepoState.Success(response.items))
                 } catch (exception: Exception) {
-                    refreshReposLiveData.postValue(exception.message?.let {
-                        RefreshRepoState.Error(
-                            it
-                        )
-                    })
+                    refreshReposLiveData.postValue(RefreshRepoState.Error(exception))
                 }
             }
         }
@@ -67,11 +59,11 @@ class MainViewModel @Inject constructor(
     sealed class SearchReposState {
         object Loading : SearchReposState()
         data class Success(val list: List<RepositoryDTO>) : SearchReposState()
-        data class Error(val error: String) : SearchReposState()
+        data class Error(val error: Exception) : SearchReposState()
     }
 
     sealed class RefreshRepoState {
         data class Success(val list: List<RepositoryDTO>) : RefreshRepoState()
-        data class Error(val error: String) : RefreshRepoState()
+        data class Error(val error: Exception) : RefreshRepoState()
     }
 }

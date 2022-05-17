@@ -31,7 +31,7 @@ class UserViewModel @Inject constructor(
                 val response = userRepository.getUser(username)
                 userLiveData.postValue(UserState.Success(response))
             } catch (exception: Exception) {
-                userLiveData.postValue(exception.message?.let { UserState.Error(it) })
+                userLiveData.postValue(UserState.Error(exception))
             }
         }
     }
@@ -43,7 +43,7 @@ class UserViewModel @Inject constructor(
                 val response = userRepository.getUserRepositories(reposUrl)
                 repositoriesLiveData.postValue(UserReposState.Success(response))
             } catch (exception: Exception) {
-                repositoriesLiveData.postValue(exception.message?.let { UserReposState.Error(it) })
+                repositoriesLiveData.postValue(UserReposState.Error(exception))
             }
         }
     }
@@ -54,11 +54,11 @@ class UserViewModel @Inject constructor(
 
     sealed class UserState {
         data class Success(val result: UserDTO) : UserState()
-        data class Error(val error: String) : UserState()
+        data class Error(val error: Exception) : UserState()
     }
 
     sealed class UserReposState {
         data class Success(val result: List<RepositoryDTO>): UserReposState()
-        data class Error(val error: String): UserReposState()
+        data class Error(val error: Exception): UserReposState()
     }
 }
